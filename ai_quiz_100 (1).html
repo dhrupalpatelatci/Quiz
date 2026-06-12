@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a12;--surface:#13131f;--card:#1a1a2e;--border:rgba(255,255,255,0.08);--accent:#7c6af7;--accent2:#00d4aa;--accent3:#ff6b6b;--text:#f0f0f0;--muted:#888}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.screen{display:none;padding:2rem 1.5rem;max-width:600px;margin:0 auto;min-height:100vh;flex-direction:column;align-items:center;justify-content:center}
+.screen.active{display:flex}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.logo{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.25rem;box-shadow:0 0 40px rgba(124,106,247,0.4)}
+.title{font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;text-align:center;margin-bottom:0.5rem}
+.sub{color:var(--muted);text-align:center;margin-bottom:1.5rem;font-size:0.9rem;line-height:1.6}
+.btn{background:linear-gradient(135deg,var(--accent),#5a4fcf);color:white;border:none;padding:13px 28px;border-radius:12px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;box-shadow:0 4px 20px rgba(124,106,247,0.35);margin-bottom:8px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,106,247,0.5)}
+.btn:active{transform:scale(0.98)}
+.btn.sec{background:transparent;border:1px solid var(--border);color:var(--text);box-shadow:none}
+.btn.sec:hover{background:var(--card);transform:none;box-shadow:none}
+.inp{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;margin-bottom:1rem}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--muted)}
+label{font-size:0.82rem;color:var(--muted);margin-bottom:5px;display:block}
+.prog{width:100%;height:4px;background:var(--surface);border-radius:2px;margin-bottom:1.75rem}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 0.4s}
+.q-num{font-size:0.82rem;color:var(--muted);margin-bottom:0.4rem}
+.q-text{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:600;line-height:1.5;margin-bottom:1.5rem}
+.opts{width:100%;display:flex;flex-direction:column;gap:9px}
+.opt{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;transition:all 0.2s;font-size:0.93rem;text-align:left;display:flex;align-items:center;gap:11px}
+.opt:hover{border-color:var(--accent);background:rgba(124,106,247,0.08)}
+.opt.selected{border-color:var(--accent);background:rgba(124,106,247,0.15)}
+.opt.disabled{pointer-events:none}
+.olabel{width:26px;height:26px;border-radius:7px;background:var(--card);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;flex-shrink:0;transition:background 0.2s}
+.opt.selected .olabel{background:var(--accent)}
+.dots{display:flex;gap:4px;margin-bottom:1.4rem;width:100%}
+.dot{height:4px;border-radius:2px;flex:1;background:var(--surface);transition:background 0.3s}
+.dot.done{background:var(--accent)}
+.dot.cur{background:var(--accent2)}
+.score-ring{width:140px;height:140px;position:relative;margin:0 auto 1.75rem}
+.score-ring svg{transform:rotate(-90deg)}
+.score-txt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-big{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent)}
+.score-lbl{font-size:0.72rem;color:var(--muted)}
+.grade-emoji{font-size:2.5rem;margin-bottom:0.5rem}
+.lb{width:100%;margin-top:0.5rem}
+.lb-hdr{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);padding:0 12px;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px}
+.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:11px;margin-bottom:7px}
+.lb-row.hi{border-color:var(--accent);background:rgba(124,106,247,0.08)}
+.lb-rank{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;width:28px;text-align:center}
+.lb-info{flex:1}
+.lb-name{font-weight:500;font-size:0.92rem}
+.lb-id{font-size:0.75rem;color:var(--muted)}
+.lb-sc{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;color:var(--accent)}
+.status-bar{width:100%;padding:10px 14px;border-radius:10px;font-size:0.82rem;text-align:center;margin-bottom:0.75rem;display:none}
+.status-bar.sending{background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:var(--accent);display:block}
+.status-bar.ok{background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);color:var(--accent2);display:block}
+.status-bar.err{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:var(--accent3);display:block}
+.tag{display:inline-flex;align-items:center;gap:5px;background:rgba(124,106,247,0.15);color:var(--accent);padding:4px 11px;border-radius:100px;font-size:0.78rem;font-weight:500;margin-bottom:1rem}
+.setup-box{background:var(--surface);border:1px solid rgba(124,106,247,0.3);border-radius:12px;padding:1rem;margin-bottom:1.25rem;width:100%}
+.setup-box h4{font-family:'Syne',sans-serif;font-size:0.85rem;margin-bottom:0.5rem;color:var(--accent)}
+.setup-box p{font-size:0.78rem;color:var(--muted);line-height:1.6}
+.setup-box code{background:var(--card);padding:2px 6px;border-radius:5px;font-size:0.75rem;color:var(--accent2);font-family:monospace}
+.inp-url{font-size:0.82rem;padding:10px 12px}
+.dot-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1s ease-in-out infinite;margin-right:4px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div class="logo">🤖</div>
+  <div class="tag">⚡ Ahmedabad AI Club</div>
+  <h1 class="title">AI Knowledge<br>Challenge</h1>
+  <p class="sub">10 random questions from a bank of 100 · Live leaderboard<br>Every player gets a different set of questions!</p>
+  <button class="btn" onclick="go('s-entry')">Play Now →</button>
+  <button class="btn sec" onclick="go('s-setup')">⚙️ Configure Sheets URL</button>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+  <div class="logo" style="font-size:22px">⚙️</div>
+  <h2 class="title" style="font-size:1.4rem">Google Sheets Setup</h2>
+  <p class="sub">Paste your Apps Script Web App URL below to enable live score posting</p>
+  <div class="setup-box">
+    <h4>📋 Steps (one-time setup, ~2 min)</h4>
+    <p>
+      1. Open your Google Sheet → <code>Extensions → Apps Script</code><br><br>
+      2. Paste the script shown below → Save<br><br>
+      3. Click <code>Deploy → New deployment → Web App</code><br><br>
+      4. Set <code>Execute as: Me</code> &amp; <code>Who has access: Anyone</code><br><br>
+      5. Copy the Web App URL and paste it here 👇
+    </p>
+  </div>
+  <div style="width:100%">
+    <label>Apps Script Web App URL</label>
+    <input class="inp inp-url" id="sheetUrl" type="text" placeholder="https://script.google.com/macros/s/.../exec"/>
+    <button class="btn" onclick="saveSheetUrl()">Save & Continue →</button>
+    <button class="btn sec" onclick="go('s-home')">← Back</button>
+  </div>
+</div>
+
+<!-- ENTRY -->
+<div class="screen" id="s-entry">
+  <div class="logo">🎯</div>
+  <h2 class="title" style="font-size:1.5rem">Enter Your Details</h2>
+  <p class="sub">Your name and Enterprise ID will appear on the leaderboard</p>
+  <div style="width:100%">
+    <label>Full Name</label>
+    <input class="inp" id="pName" type="text" placeholder="e.g. Dhrupal Patel"/>
+    <label>Enterprise ID</label>
+    <input class="inp" id="pId" type="text" placeholder="e.g. d.dineshkumar.patel"/>
+    <button class="btn" onclick="startQuiz()">Start Quiz →</button>
+    <button class="btn sec" onclick="go('s-home')">← Back</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="s-quiz">
+  <div style="width:100%">
+    <div class="dots" id="stepDots"></div>
+    <div class="prog"><div class="prog-fill" id="pFill"></div></div>
+    <div class="q-num" id="qNum"></div>
+    <div class="q-text" id="qTxt"></div>
+    <div class="opts" id="opts"></div>
+    <button class="btn" id="nextBtn" style="margin-top:1.2rem;display:none" onclick="nextQ()">Next →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="s-result">
+  <div class="score-ring">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="58" fill="none" stroke="#1a1a2e" stroke-width="12"/>
+      <circle id="arc" cx="70" cy="70" r="58" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+      <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7c6af7"/><stop offset="100%" stop-color="#00d4aa"/></linearGradient></defs>
+    </svg>
+    <div class="score-txt">
+      <div class="score-big" id="sBig">0/10</div>
+      <div class="score-lbl">score</div>
+    </div>
+  </div>
+  <div class="grade-emoji" id="gEmoji"></div>
+  <h2 class="title" style="font-size:1.4rem;margin-bottom:0.4rem" id="gTitle"></h2>
+  <p class="sub" id="gMsg"></p>
+  <div class="status-bar" id="sheetStatus"></div>
+  <h3 style="font-family:'Syne',sans-serif;width:100%;font-size:0.95rem;margin-bottom:0.75rem;margin-top:0.5rem">🏆 Leaderboard</h3>
+  <div class="lb-hdr"><span>Player</span><span>Score</span></div>
+  <div class="lb" id="lb"></div>
+  <br>
+  <button class="btn" onclick="restart()">Play Again →</button>
+</div>
+
+<script>
+const ALL_QUESTIONS=[
+  // ── Fundamentals ──
+  {q:"What does GPT stand for in large language models?",opts:["General Purpose Technology","Generative Pre-trained Transformer","Graph Processing Tool","Global Prediction Task"],a:1},
+  {q:"What does LLM stand for?",opts:["Large Logic Model","Low-Latency Machine","Large Language Model","Layered Learning Module"],a:2},
+  {q:"Which technique trains AI by rewarding desired outputs and penalising undesired ones?",opts:["Supervised Learning","Unsupervised Learning","Reinforcement Learning","Transfer Learning"],a:2},
+  {q:"What is 'hallucination' in AI language models?",opts:["Model refuses to answer","Model generates false but confident information","Model runs out of tokens","A training data error"],a:1},
+  {q:"What is 'overfitting' in machine learning?",opts:["Performs well on training data but poorly on new data","Trained on too little data","Uses too much compute","Takes too long to run"],a:0},
+  {q:"What is 'underfitting' in machine learning?",opts:["Model is too complex","Model fails to capture patterns in training data","Model is too large","Model trains too fast"],a:1},
+  {q:"What does 'training data' mean in AI?",opts:["Data used to test a model","Data the model learns patterns from","Data stored in a database","Data generated by the model"],a:1},
+  {q:"What is a 'neural network' inspired by?",opts:["Computer circuits","The human brain's neuron structure","Database tables","Mathematical matrices"],a:1},
+  {q:"What does 'deep learning' refer to?",opts:["Learning at a deep pace","Neural networks with many layers","Learning from large datasets","Unsupervised learning only"],a:1},
+  {q:"What is 'machine learning' in simple terms?",opts:["Manually programming rules","Systems that learn from data without explicit programming","Teaching robots to walk","Building faster processors"],a:1},
+
+  // ── Models & Architectures ──
+  {q:"Which company developed BERT, a landmark NLP model?",opts:["OpenAI","Meta AI","Google","Microsoft"],a:2},
+  {q:"Which AI architecture revolutionised NLP with the 2017 paper 'Attention Is All You Need'?",opts:["LSTM","Transformer","CNN","GAN"],a:1},
+  {q:"Which is NOT a real neural network architecture?",opts:["CNN – Convolutional","RNN – Recurrent","TNN – Transactional","Transformer"],a:2},
+  {q:"Which company created ChatGPT?",opts:["Google","Meta","Microsoft","OpenAI"],a:3},
+  {q:"What is Google's large language model family called?",opts:["Claude","Gemini","Llama","Falcon"],a:1},
+  {q:"What is Meta's open-source LLM family called?",opts:["Gemini","Claude","Llama","Mistral"],a:2},
+  {q:"What is Anthropic's AI assistant called?",opts:["Gemini","Copilot","Claude","Bard"],a:2},
+  {q:"Which framework is most widely used for training deep learning models?",opts:["TensorFlow / PyTorch","Microsoft Word","Apache Spark","React Native"],a:0},
+  {q:"What does GAN stand for?",opts:["Generative Adversarial Network","Global Attention Node","Graph Attention Network","Gated Activation Neuron"],a:0},
+  {q:"What is a 'diffusion model' used for?",opts:["Predicting stock prices","Generating images from noise","Translating languages","Compressing data"],a:1},
+
+  // ── Techniques & Concepts ──
+  {q:"What does RAG stand for in modern AI systems?",opts:["Rapid Autonomous Generation","Retrieval-Augmented Generation","Recursive Attention Gradient","Real-time AI Gateway"],a:1},
+  {q:"What is 'prompt engineering'?",opts:["Building AI hardware","Crafting inputs to get better AI outputs","Training neural networks","Compiling machine code"],a:1},
+  {q:"What does 'fine-tuning' mean in AI?",opts:["Adjusting audio settings","Further training a pre-trained model on specific data","Debugging code","Compressing model size"],a:1},
+  {q:"What is a 'token' in the context of LLMs?",opts:["A security certificate","A unit of text the model processes","A type of neural layer","An API key"],a:1},
+  {q:"What is the 'context window' in large language models?",opts:["The AI user interface","Maximum text a model can process at once","A content safety filter","Training dataset size"],a:1},
+  {q:"What does 'multimodal AI' mean?",opts:["AI running on multiple servers","AI that processes text, images, audio etc.","AI with multiple personalities","AI trained on multiple datasets"],a:1},
+  {q:"What are 'embeddings' in AI?",opts:["Numerical vector representations of data","A type of animation","Embedded system chips","Code comments"],a:0},
+  {q:"What is the purpose of the 'attention mechanism' in Transformers?",opts:["Focus computation on relevant parts of input","Speed up inference","Reduce model size","Handle audio input"],a:0},
+  {q:"What is 'zero-shot' learning?",opts:["Training with no data","Model performs tasks without task-specific training examples","Instant inference","Unsupervised clustering"],a:1},
+  {q:"What concept describes a model learning from very few examples?",opts:["Zero-shot learning","Few-shot learning","Multi-shot learning","Batch learning"],a:1},
+
+  // ── Evaluation & Metrics ──
+  {q:"Which metric is commonly used to evaluate language model quality?",opts:["RGB Score","Perplexity","Byte Rate","Token Velocity"],a:1},
+  {q:"What does 'accuracy' measure in a classification model?",opts:["Speed of predictions","Fraction of correct predictions","Memory used","Model size"],a:1},
+  {q:"What is the F1 score in machine learning?",opts:["A gaming benchmark","Harmonic mean of precision and recall","Training loss value","Learning rate multiplier"],a:1},
+  {q:"What is 'precision' in machine learning evaluation?",opts:["How fast the model runs","Ratio of true positives to all positive predictions","Total training time","Number of parameters"],a:1},
+  {q:"What is a 'confusion matrix' used for?",opts:["Visualising neural network weights","Evaluating classification model performance","Storing training data","Encoding text"],a:1},
+
+  // ── Optimisation & Training ──
+  {q:"What is 'model quantisation'?",opts:["Measuring model accuracy","Reducing model size by lowering numerical precision","Training with quantum computers","Adding more layers"],a:1},
+  {q:"What does RLHF stand for?",opts:["Reinforcement Learning from Human Feedback","Random Layer Heuristic Function","Recursive Latent Hidden Features","Rapid Learning for Hybrid Functions"],a:0},
+  {q:"Which regularisation technique randomly disables neurons during training?",opts:["Boosting","Dropout","Pooling","Padding"],a:1},
+  {q:"What is 'gradient descent' used for in AI?",opts:["Visualising data","Minimising the loss function by updating weights","Generating images","Tokenising text"],a:1},
+  {q:"What is the 'learning rate' in model training?",opts:["How fast the GPU runs","Step size for updating model weights","Number of training epochs","Batch size setting"],a:1},
+  {q:"What is 'batch normalisation'?",opts:["Splitting data into batches","Normalising layer inputs to stabilise training","A type of data augmentation","Resizing images"],a:1},
+  {q:"What does 'epoch' mean in training?",opts:["A hardware cycle","One full pass through the training dataset","A single gradient update","A model checkpoint"],a:1},
+  {q:"What is 'transfer learning'?",opts:["Moving data between servers","Reusing a pre-trained model on a new task","Translating between languages","Transferring model weights to hardware"],a:1},
+  {q:"What is 'data augmentation'?",opts:["Deleting noisy data","Creating modified copies of training data to improve generalisation","Storing data in the cloud","Compressing datasets"],a:1},
+  {q:"What is the purpose of a validation set?",opts:["Training the model","Tuning hyperparameters and monitoring overfitting","Storing model weights","Generating predictions"],a:1},
+
+  // ── Infrastructure & Deployment ──
+  {q:"What is a 'vector database' used for in AI apps?",opts:["Storing images","Storing and searching embeddings efficiently","Running model inference","Managing API keys"],a:1},
+  {q:"What does 'inference' mean in AI?",opts:["Training a new model","Using a trained model to make predictions","Evaluating model performance","Collecting training data"],a:1},
+  {q:"What is 'model distillation'?",opts:["Filtering training data","Training a smaller model to mimic a larger one","Extracting features from images","A data cleaning technique"],a:1},
+  {q:"What is an 'API' in the context of AI services?",opts:["A hardware component","Interface that lets applications communicate with AI services","A training algorithm","A type of dataset"],a:1},
+  {q:"What does GPU stand for and why is it important for AI?",opts:["General Processing Unit – manages memory","Graphics Processing Unit – accelerates parallel computations","Global Processing Utility – handles networking","Grid Processing Unit – manages clusters"],a:1},
+
+  // ── Safety & Ethics ──
+  {q:"What is 'AI alignment'?",opts:["Formatting AI output","Ensuring AI goals match human values and intentions","Aligning text columns","Syncing AI servers"],a:1},
+  {q:"Which AI safety issue describes a model pursuing unintended sub-goals?",opts:["Reward hacking","Gradient descent","Model drift","Data leakage"],a:0},
+  {q:"What is 'bias' in the context of AI models?",opts:["A programming bug","Systematic errors from skewed training data","A hardware malfunction","A type of overfitting"],a:1},
+  {q:"What is 'explainability' in AI?",opts:["Making AI run faster","Ability to understand and explain how AI makes decisions","Documenting code","Making AI cheaper"],a:1},
+  {q:"What is 'data privacy' a concern for in AI?",opts:["Model performance","Personal information being misused during training or inference","Code security","Server costs"],a:1},
+  {q:"What does 'responsible AI' mean?",opts:["AI that responds quickly","Developing AI ethically, fairly, and transparently","AI that saves energy","AI with fewer parameters"],a:1},
+  {q:"What is 'deepfake' technology?",opts:["A deep learning optimiser","AI-generated synthetic media that replaces a person's likeness","A data storage method","A type of neural network"],a:1},
+  {q:"What is 'model drift'?",opts:["A training error","Degradation of model performance as real-world data changes over time","Moving a model to a new server","Reducing model size"],a:1},
+
+  // ── NLP & Language ──
+  {q:"What does NLP stand for?",opts:["Neural Learning Protocol","Natural Language Processing","Network Layer Protocol","Numeric Logic Pipeline"],a:1},
+  {q:"What is 'sentiment analysis'?",opts:["Analysing server sentiment","Determining emotional tone of text","Compressing text data","Translating languages"],a:1},
+  {q:"What is 'named entity recognition' (NER)?",opts:["Naming neural network layers","Identifying entities like people, places, dates in text","Recognising handwriting","A type of image classification"],a:1},
+  {q:"What is 'text summarisation' in NLP?",opts:["Expanding short text","Automatically condensing long text into shorter form","Translating text","Spell-checking text"],a:1},
+  {q:"What is a 'chatbot'?",opts:["A robot that types","Software simulating human conversation","A type of database","A hardware device"],a:1},
+  {q:"What is 'machine translation'?",opts:["Moving machines between locations","Automatically translating text between languages","Converting speech to text","Encoding binary data"],a:1},
+  {q:"What does 'tokenisation' mean in NLP?",opts:["Securing an API","Breaking text into smaller units (tokens) for processing","Encrypting data","Compressing a model"],a:1},
+  {q:"What is 'word embedding'?",opts:["Inserting words into code","Representing words as dense numerical vectors","A spell-check algorithm","A text compression method"],a:1},
+
+  // ── Computer Vision ──
+  {q:"What is 'computer vision' in AI?",opts:["Programming computer screens","Enabling machines to interpret and understand visual data","A type of network protocol","A coding language"],a:1},
+  {q:"What is 'object detection' in computer vision?",opts:["Finding bugs in code","Identifying and locating objects within an image","Compressing images","Generating images"],a:1},
+  {q:"What does CNN stand for in deep learning?",opts:["Connected Neural Node","Convolutional Neural Network","Cumulative Normalisation Network","Central Neuron Node"],a:1},
+  {q:"What is 'image segmentation'?",opts:["Splitting an image file into parts","Classifying each pixel of an image into categories","Resizing images","Compressing images"],a:1},
+  {q:"What is 'optical character recognition' (OCR)?",opts:["Recognising colours in images","Converting images of text into machine-readable text","Detecting objects","Scanning barcodes"],a:1},
+
+  // ── Generative AI ──
+  {q:"What is 'temperature' in LLM generation?",opts:["Server heat management","Controls randomness and creativity of the output","Training speed setting","GPU clock rate"],a:1},
+  {q:"What is 'chain-of-thought' prompting?",opts:["Linking multiple AI models","Asking AI to reason step by step before answering","A type of data pipeline","Chaining API calls"],a:1},
+  {q:"What is 'top-p sampling' in text generation?",opts:["Picking the top prediction always","Sampling from the smallest set of tokens whose cumulative probability exceeds p","A training strategy","A model evaluation method"],a:1},
+  {q:"What is 'system prompt' in an LLM API call?",opts:["The hardware boot instructions","Instructions that define the AI's behaviour and persona","The user's message","The model's training data"],a:1},
+  {q:"What is 'grounding' in generative AI?",opts:["A safety shutdown procedure","Connecting AI outputs to factual, verifiable sources","Reducing model size","Encoding training data"],a:1},
+  {q:"What is an 'AI agent'?",opts:["A human AI trainer","An AI system that autonomously takes actions to achieve goals","A type of dataset","A model evaluation metric"],a:1},
+  {q:"What is 'in-context learning' in LLMs?",opts:["Learning from classroom data","Model learning from examples provided in the prompt without weight updates","Training on new data","A type of fine-tuning"],a:1},
+
+  // ── Tools & Ecosystem ──
+  {q:"What is Hugging Face known for in the AI ecosystem?",opts:["Cloud computing services","Open-source AI models and datasets hub","AI hardware manufacturing","Cybersecurity tools"],a:1},
+  {q:"What is LangChain used for?",opts:["Training large language models","Building applications that chain LLM calls and tools","Data visualisation","Model quantisation"],a:1},
+  {q:"What does 'MLOps' refer to?",opts:["A machine learning operating system","Practices for deploying and maintaining ML models in production","A type of neural network","A dataset format"],a:1},
+  {q:"What is 'AutoML'?",opts:["Automatic car driving AI","Automated processes for selecting and tuning ML models","A machine learning language","An AI hardware chip"],a:1},
+  {q:"What is 'federated learning'?",opts:["Learning from government data","Training models across decentralised devices without sharing raw data","A type of supervised learning","Learning from federated databases"],a:1},
+
+  // ── Advanced Topics ──
+  {q:"What does RLHF stand for?",opts:["Reinforcement Learning from Human Feedback","Random Layer Heuristic Function","Recursive Latent Hidden Features","Rapid Learning for Hybrid Functions"],a:0},
+  {q:"What is 'knowledge distillation'?",opts:["Extracting knowledge from databases","Transferring knowledge from a large model to a smaller one","A data cleaning method","Storing model weights"],a:1},
+  {q:"What is 'sparse attention' in transformers?",opts:["Attention with very small weights","Attention that focuses on a subset of positions to reduce computation","A type of regularisation","An activation function"],a:1},
+  {q:"What is a 'foundation model'?",opts:["The base layer of a neural network","A large model pre-trained on broad data and adaptable to many tasks","A hardware component","A dataset format"],a:1},
+  {q:"What is 'prompt injection' in AI security?",opts:["Injecting data into a database","Malicious inputs designed to hijack AI model behaviour","A type of fine-tuning","An image generation technique"],a:1},
+  {q:"What is 'constitutional AI'?",opts:["AI governed by a country's constitution","A technique to train AI to be helpful, harmless, and honest using a set of principles","A legal framework for AI","AI used in government"],a:1},
+  {q:"What is the 'mixture of experts' (MoE) architecture?",opts:["A committee of AI researchers","A model that activates only a subset of specialised sub-networks per input","A multi-model voting system","A type of ensemble learning"],a:1},
+  {q:"What is 'catastrophic forgetting' in neural networks?",opts:["A hardware failure","A model forgetting previously learned tasks when trained on new data","Data corruption during training","Loss of model weights"],a:1},
+  {q:"What does 'stochastic' mean in stochastic gradient descent?",opts:["Slow and steady","Random – uses a random subset of data per update","Structured","Sequential"],a:1},
+  {q:"What is 'self-supervised learning'?",opts:["A model that trains itself without any data","Learning where the model generates its own labels from unlabelled data","Supervised learning without a teacher","A type of reinforcement learning"],a:1},
+  {q:"What is 'semantic search'?",opts:["Searching by exact keyword match","Searching based on meaning and context rather than keywords","A type of web crawling","A database query language"],a:1},
+  {q:"What does 'model collapse' refer to in generative AI?",opts:["A model crashing during inference","Degradation when a model is trained on AI-generated data repeatedly","Running out of GPU memory","A type of overfitting"],a:1},
+  {q:"What is 'parameter-efficient fine-tuning' (PEFT)?",opts:["Training only a small subset of model parameters instead of all","Fine-tuning with very little data","Reducing model size after training","A type of quantisation"],a:0},
+  {q:"What is LoRA in the context of LLM fine-tuning?",opts:["A type of data augmentation","Low-Rank Adaptation – a lightweight fine-tuning technique","A model evaluation metric","A vector database"],a:1},
+  {q:"What is 'agentic AI'?",opts:["AI that runs on agents/servers","AI systems that autonomously plan and execute multi-step tasks","A type of chatbot","AI with emotions"],a:1},
+  {q:"What is 'multihead attention' in transformers?",opts:["Running multiple transformer models together","Running multiple attention operations in parallel to capture different relationships","A type of pooling","A regularisation method"],a:1},
+  {q:"What is the 'softmax' function used for in neural networks?",opts:["Smoothing input data","Converting raw scores into a probability distribution","A type of activation for regression","Normalising embeddings"],a:1}
+];
+
+function shuffle(a){return[...a].sort(()=>Math.random()-0.5)}
+function pick10(){return shuffle(ALL_QUESTIONS).slice(0,10)}
+
+let gameQs=[],cQ=0,score=0,selIdx=null;
+let player={name:'',id:''};
+let lb=[];
+let SHEET_URL='https://script.google.com/macros/s/AKfycby8l_0VLWZgnRlZhU9lMJvoJkBPi8quKDGBWjd6O3O6Hu7R3O57gkdbPlVmkY_8uNrkHQ/exec';
+
+try{const s=localStorage.getItem('aiq_lb4');if(s)lb=JSON.parse(s);}catch(e){}
+try{SHEET_URL=localStorage.getItem('aiq_sheet_url')||SHEET_URL;}catch(e){}
+
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function saveSheetUrl(){
+  const u=document.getElementById('sheetUrl').value.trim();
+  if(!u){alert('Please enter the Web App URL');return;}
+  SHEET_URL=u;
+  try{localStorage.setItem('aiq_sheet_url',u);}catch(e){}
+  go('s-entry');
+}
+
+function startQuiz(){
+  const n=document.getElementById('pName').value.trim();
+  const i=document.getElementById('pId').value.trim();
+  if(!n||!i){alert('Please enter your name and Enterprise ID');return;}
+  player={name:n,id:i};
+  gameQs=pick10();cQ=0;score=0;selIdx=null;
+  buildDots();showQ();go('s-quiz');
+}
+
+function buildDots(){
+  document.getElementById('stepDots').innerHTML=gameQs.map((_,i)=>`<div class="dot" id="d${i}"></div>`).join('');
+  updDots();
+}
+function updDots(){gameQs.forEach((_,i)=>{const d=document.getElementById('d'+i);d.className='dot'+(i<cQ?' done':i===cQ?' cur':'');});}
+
+function showQ(){
+  selIdx=null;
+  const q=gameQs[cQ];
+  document.getElementById('qNum').textContent=`Question ${cQ+1} of ${gameQs.length}`;
+  document.getElementById('qTxt').textContent=q.q;
+  document.getElementById('pFill').style.width=`${(cQ/gameQs.length)*100}%`;
+  document.getElementById('nextBtn').style.display='none';
+  const L=['A','B','C','D'];
+  document.getElementById('opts').innerHTML=q.opts.map((o,i)=>
+    `<div class="opt" onclick="pick(${i})" id="o${i}">
+      <span class="olabel" id="ol${i}">${L[i]}</span>${o}
+    </div>`
+  ).join('');
+  updDots();
+}
+
+function pick(idx){
+  if(selIdx!==null){document.getElementById('o'+selIdx).classList.remove('selected');}
+  selIdx=idx;
+  document.getElementById('o'+idx).classList.add('selected');
+  document.getElementById('nextBtn').style.display='block';
+}
+
+function nextQ(){
+  if(selIdx===null)return;
+  const q=gameQs[cQ];
+  if(selIdx===q.a)score++;
+  cQ++;
+  if(cQ<gameQs.length)showQ();
+  else showResult();
+}
+
+function getGrade(s){
+  if(s===10)return{e:'🏆',t:'Perfect Score!',m:'Extraordinary! You are an AI Champion!'};
+  if(s>=8)return{e:'🌟',t:'AI Expert!',m:'Outstanding! You clearly know your AI very well.'};
+  if(s>=6)return{e:'🎯',t:'AI Enthusiast!',m:'Great performance! Keep exploring the AI world.'};
+  if(s>=4)return{e:'📚',t:'Learning Mode On!',m:'Good attempt! Keep learning — you will get there.'};
+  return{e:'🤖',t:'Just Getting Started!',m:'Every expert was once a beginner. Try again!'};
+}
+
+function showResult(){
+  document.getElementById('arc').style.strokeDashoffset=364.4-((score/10)*364.4);
+  document.getElementById('sBig').textContent=`${score}/10`;
+  const g=getGrade(score);
+  document.getElementById('gEmoji').textContent=g.e;
+  document.getElementById('gTitle').textContent=g.t;
+  document.getElementById('gMsg').textContent=g.m;
+  const entry={name:player.name,id:player.id,score,ts:Date.now()};
+  lb.push(entry);lb.sort((a,b)=>b.score-a.score||a.ts-b.ts);
+  if(lb.length>50)lb=lb.slice(0,50);
+  try{localStorage.setItem('aiq_lb4',JSON.stringify(lb));}catch(e){}
+  renderLB();
+  go('s-result');
+  postToSheet(entry);
+}
+
+function renderLB(){
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('lb').innerHTML=lb.slice(0,10).map((p,i)=>{
+    const me=p.name===player.name&&p.id===player.id&&p.score===score;
+    return`<div class="lb-row ${me?'hi':''}">
+      <div class="lb-rank">${i<3?medals[i]:'#'+(i+1)}</div>
+      <div class="lb-info"><div class="lb-name">${p.name}${me?' ← you':''}</div><div class="lb-id">${p.id}</div></div>
+      <div class="lb-sc">${p.score}/10</div>
+    </div>`;
+  }).join('');
+}
+
+async function postToSheet(entry){
+  const sb=document.getElementById('sheetStatus');
+  if(!SHEET_URL){
+    sb.className='status-bar err';
+    sb.textContent='⚠ No Sheets URL configured. Tap ⚙️ on home screen to set it up.';
+    return;
+  }
+  sb.className='status-bar sending';
+  sb.innerHTML='<span class="dot-pulse"></span>Posting score to Google Sheets…';
+  const now=new Date(entry.ts);
+  const dateStr=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const timeStr=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const params=new URLSearchParams({
+    name:entry.name,
+    enterpriseId:entry.id,
+    score:`${entry.score}/10`,
+    percent:`${entry.score*10}%`,
+    date:dateStr,
+    time:timeStr
+  });
+  try{
+    const res=await fetch(`${SHEET_URL}?${params.toString()}`,{method:'GET',mode:'no-cors'});
+    sb.className='status-bar ok';
+    sb.textContent='✅ Score saved to Google Sheets!';
+  }catch(e){
+    sb.className='status-bar err';
+    sb.textContent='❌ Could not reach Google Sheets. Check your Web App URL.';
+  }
+}
+
+function restart(){
+  document.getElementById('pName').value='';
+  document.getElementById('pId').value='';
+  document.getElementById('sheetStatus').className='status-bar';
+  go('s-entry');
+}
+
+window.addEventListener('load',()=>{
+  if(SHEET_URL)document.getElementById('sheetUrl').value=SHEET_URL;
+});
+</script>
+</body>
+</html>
