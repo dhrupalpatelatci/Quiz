@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Knowledge Challenge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a12;--surface:#13131f;--card:#1a1a2e;--border:rgba(255,255,255,0.08);--accent:#7c6af7;--accent2:#00d4aa;--accent3:#ff6b6b;--text:#f0f0f0;--muted:#888}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.screen{display:none;padding:2rem 1.5rem;max-width:600px;margin:0 auto;min-height:100vh;flex-direction:column;align-items:center;justify-content:center}
+.screen.active{display:flex}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.logo{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.25rem;box-shadow:0 0 40px rgba(124,106,247,0.4)}
+.title{font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;text-align:center;margin-bottom:0.5rem}
+.sub{color:var(--muted);text-align:center;margin-bottom:1.5rem;font-size:0.9rem;line-height:1.6}
+.btn{background:linear-gradient(135deg,var(--accent),#5a4fcf);color:white;border:none;padding:13px 28px;border-radius:12px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;box-shadow:0 4px 20px rgba(124,106,247,0.35);margin-bottom:8px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,106,247,0.5)}
+.btn:active{transform:scale(0.98)}
+.btn.sec{background:transparent;border:1px solid var(--border);color:var(--text);box-shadow:none}
+.btn.sec:hover{background:var(--card);transform:none;box-shadow:none}
+.inp{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;margin-bottom:1rem}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--muted)}
+label{font-size:0.82rem;color:var(--muted);margin-bottom:5px;display:block}
+.prog{width:100%;height:4px;background:var(--surface);border-radius:2px;margin-bottom:1.5rem}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 0.4s}
+.q-num{font-size:0.82rem;color:var(--muted);margin-bottom:0.4rem}
+.q-text{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:600;line-height:1.55;margin-bottom:1.25rem}
+.opts{width:100%;display:flex;flex-direction:column;gap:8px}
+.opt{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;cursor:pointer;transition:all 0.2s;font-size:0.88rem;text-align:left;display:flex;align-items:flex-start;gap:10px;line-height:1.45}
+.opt:hover{border-color:var(--accent);background:rgba(124,106,247,0.08)}
+.opt.selected{border-color:var(--accent);background:rgba(124,106,247,0.15)}
+.opt.disabled{pointer-events:none}
+.olabel{width:24px;height:24px;border-radius:6px;background:var(--card);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;flex-shrink:0;margin-top:1px;transition:background 0.2s}
+.opt.selected .olabel{background:var(--accent)}
+.dots{display:flex;gap:3px;margin-bottom:1.25rem;width:100%}
+.dot{height:4px;border-radius:2px;flex:1;background:var(--surface);transition:background 0.3s}
+.dot.done{background:var(--accent)}
+.dot.cur{background:var(--accent2)}
+.score-ring{width:140px;height:140px;position:relative;margin:0 auto 1.75rem}
+.score-ring svg{transform:rotate(-90deg)}
+.score-txt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-big{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent)}
+.score-lbl{font-size:0.72rem;color:var(--muted)}
+.grade-emoji{font-size:2.5rem;margin-bottom:0.5rem}
+.lb{width:100%;margin-top:0.5rem}
+.lb-hdr{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);padding:0 12px;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px}
+.lb-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:11px;margin-bottom:7px}
+.lb-row.hi{border-color:var(--accent);background:rgba(124,106,247,0.08)}
+.lb-rank{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;width:28px;text-align:center}
+.lb-info{flex:1}
+.lb-name{font-weight:500;font-size:0.92rem}
+.lb-id{font-size:0.75rem;color:var(--muted)}
+.lb-sc{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;color:var(--accent)}
+.status-bar{width:100%;padding:10px 14px;border-radius:10px;font-size:0.82rem;text-align:center;margin-bottom:0.75rem;display:none}
+.status-bar.sending{background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:var(--accent);display:block}
+.status-bar.ok{background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.3);color:var(--accent2);display:block}
+.status-bar.err{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:var(--accent3);display:block}
+.tag{display:inline-flex;align-items:center;gap:5px;background:rgba(124,106,247,0.15);color:var(--accent);padding:4px 11px;border-radius:100px;font-size:0.78rem;font-weight:500;margin-bottom:1rem}
+.setup-box{background:var(--surface);border:1px solid rgba(124,106,247,0.3);border-radius:12px;padding:1rem;margin-bottom:1.25rem;width:100%}
+.setup-box h4{font-family:'Syne',sans-serif;font-size:0.85rem;margin-bottom:0.5rem;color:var(--accent)}
+.setup-box p{font-size:0.78rem;color:var(--muted);line-height:1.7}
+.setup-box code{background:var(--card);padding:2px 6px;border-radius:5px;font-size:0.75rem;color:var(--accent2);font-family:monospace}
+.inp-url{font-size:0.82rem;padding:10px 12px}
+.dot-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1s ease-in-out infinite;margin-right:4px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="s-home">
+  <div class="logo">🤖</div>
+  <div class="tag">⚡ Ahmedabad AI Club</div>
+  <h1 class="title">AI Knowledge<br>Challenge</h1>
+  <p class="sub">10 random hard questions · 5 options each<br>Every player gets a different set!</p>
+  <button class="btn" onclick="go('s-entry')">Play Now →</button>
+  <button class="btn sec" onclick="go('s-setup')">⚙️ Configure Google Sheets</button>
+</div>
+
+<div class="screen" id="s-setup">
+  <div class="logo" style="font-size:22px">⚙️</div>
+  <h2 class="title" style="font-size:1.4rem">Google Sheets Setup</h2>
+  <p class="sub">Google Sheets is already configured and ready to receive scores!</p>
+  <div class="setup-box">
+    <h4>📋 Steps (one-time ~3 min)</h4>
+    <p>
+      1. Go to <code>flow.microsoft.com</code> → Create → <code>Instant cloud flow</code><br>
+      2. Trigger: <code>When an HTTP request is received</code> → Method: POST<br>
+      3. Add action: <code>Excel Online (Business) → Add a row into a table</code><br>
+      4. Map columns: Name · Enterprise ID · Score · Percent · Date · Time<br>
+      5. Save → copy the <code>HTTP POST URL</code> → paste below 👇
+    </p>
+  </div>
+  <div style="width:100%">
+    <label>Apps Script Web App URL</label>
+    <input class="inp inp-url" id="flowUrl" type="text" placeholder="https://script.google.com/macros/s/AKfycbyjhQ5TPJIMA-iE6JRK-u1NYbtlQFY3psCslSlHuVKvIaFRL2Y4rZNtCjiJqEQdveqOCg/exec"/>
+    <button class="btn" onclick="saveFlowUrl()">Save & Continue →</button>
+    <button class="btn sec" onclick="go('s-home')">← Back</button>
+  </div>
+</div>
+
+<div class="screen" id="s-entry">
+  <div class="logo">🎯</div>
+  <h2 class="title" style="font-size:1.5rem">Enter Your Details</h2>
+  <p class="sub">Your name and Enterprise ID will appear on the leaderboard</p>
+  <div style="width:100%">
+    <label>Full Name</label>
+    <input class="inp" id="pName" type="text" placeholder="e.g. Dhrupal Patel"/>
+    <label>Enterprise ID</label>
+    <input class="inp" id="pId" type="text" placeholder="e.g. d.dineshkumar.patel"/>
+    <button class="btn" onclick="startQuiz()">Start Quiz →</button>
+    <button class="btn sec" onclick="go('s-home')">← Back</button>
+  </div>
+</div>
+
+<div class="screen" id="s-quiz">
+  <div style="width:100%">
+    <div class="dots" id="stepDots"></div>
+    <div class="prog"><div class="prog-fill" id="pFill"></div></div>
+    <div class="q-num" id="qNum"></div>
+    <div class="q-text" id="qTxt"></div>
+    <div class="opts" id="opts"></div>
+    <button class="btn" id="nextBtn" style="margin-top:1rem;display:none" onclick="nextQ()">Next →</button>
+  </div>
+</div>
+
+<div class="screen" id="s-result">
+  <div class="score-ring">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="58" fill="none" stroke="#1a1a2e" stroke-width="12"/>
+      <circle id="arc" cx="70" cy="70" r="58" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+      <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7c6af7"/><stop offset="100%" stop-color="#00d4aa"/></linearGradient></defs>
+    </svg>
+    <div class="score-txt">
+      <div class="score-big" id="sBig">0/10</div>
+      <div class="score-lbl">score</div>
+    </div>
+  </div>
+  <div class="grade-emoji" id="gEmoji"></div>
+  <h2 class="title" style="font-size:1.4rem;margin-bottom:0.4rem" id="gTitle"></h2>
+  <p class="sub" id="gMsg"></p>
+  <div class="status-bar" id="sheetStatus"></div>
+  <h3 style="font-family:'Syne',sans-serif;width:100%;font-size:0.95rem;margin-bottom:0.75rem;margin-top:0.5rem">🏆 Leaderboard</h3>
+  <div class="lb-hdr"><span>Player</span><span>Score</span></div>
+  <div class="lb" id="lb"></div>
+  <br>
+  <button class="btn" onclick="restart()">Play Again →</button>
+</div>
+
+<script>
+var ALL_QUESTIONS = [
+  {q:"What is the computational complexity of standard self-attention?",opts:["O(n\\u00b2) because every token attends to every token","O(log n) via binary search over key vectors","O(n log n) via merge-sort-style token passes","O(n) via linear token scan over sequence","O(n\\u00b3) due to three sequential matrix multiplications"],a:0},
+  {q:"In Adam, what do \\u03b21 and \\u03b22 control?",opts:["Exponential decay rates for first and second gradient moments","Learning rate warmup period and weight decay coefficient","Gradient clipping threshold and batch-level momentum factor","Mini-batch sample fraction and layer-wise learning rate scale","Dropout keep probability and L2 regularisation strength value"],a:0},
+  {q:"What does Flash Attention primarily reduce vs standard attention?",opts:["Total number of model parameters during inference phase","Number of gradient steps needed in the backpropagation pass","Layer count by fusing attention and FFN into one kernel","Memory bandwidth by tiling attention to avoid n\\u00d7n materialisation","Vocabulary size required by the tokenisation pipeline used"],a:3},
+  {q:"Which activation function does original BERT use in its FFN sublayers?",opts:["ReLU — rectified linear with zero for negative inputs","Sigmoid — saturating S-curve squashing all values 0-1","Tanh — hyperbolic tangent symmetric around zero value","Swish — self-gated smooth non-monotonic activation curve","GELU — Gaussian error linear unit with smooth gating"],a:4},
+  {q:"In LoRA with rank r, W\\u2208R^(d\\u00d7k): what shapes are A and B?",opts:["A:(r,d) and B:(k,r) giving product BA of shape (k,d)","A:(d,k) and B:(k,d) producing an identity approximation","A:(d,r) and B:(r,k) giving product BA\\u2248\\u0394W of shape (d,k)","A:(k,r) and B:(d,k) giving product BA of shape (d,r)","A:(r,r) and B:(d,k) giving a square diagonal update matrix"],a:2},
+  {q:"What does the KL penalty in RLHF's RL objective specifically prevent?",opts:["Reward model from overfitting to noisy human preference labels","Benchmark test data from leaking into preference training pairs","Policy from diverging too far from the SFT reference model","Discriminator from memorising hard negative training examples","Gradient from exploding during each PPO policy update step"],a:2},
+  {q:"What is the 'lost in the middle' phenomenon in long-context LLMs?",opts:["Tokens beyond context limit get silently truncated by the model","Attention heads collapse to only the very first few tokens","KV cache evicts middle-range tokens under heavy memory pressure","Positional encodings degrade for any token position past 512","Model underutilises content placed in the middle of context window"],a:4},
+  {q:"What is HNSW and why is it used in vector databases?",opts:["Heuristic Normalised Softmax Weights for logit scaling","Hash-based Nearest Search With quantisation for exact lookup","Hybrid Neural Sparse Weighting for late-stage document re-ranking","Hierarchical Navigable Small World graph for fast ANN search","High-dimensional Numerical Sampling With rejection filtering"],a:3},
+  {q:"What is QLoRA's primary memory reduction trick vs standard LoRA?",opts:["Keeps frozen base in 4-bit NF4 and trains adapters in BF16","Uses gradient checkpointing to discard all FFN activations","Applies structured magnitude pruning before adding rank-r adapters","Ties all adapter weights across every transformer layer globally","Quantises adapter gradients to INT8 to halve backward-pass memory"],a:0},
+  {q:"What does Grouped Query Attention (GQA) reduce in transformer inference?",opts:["Sequence length cost by grouping tokens into local windows","KV cache size by sharing K/V heads across groups of Q heads","Computation cost by clustering similar attention heads together","Positional encoding overhead by grouping layers to share encodings","Communication overhead by fusing multiple attention heads into one"],a:1},
+  {q:"What is the attention-sink phenomenon found in StreamingLLM?",opts:["Softmax scores sum above one causing gradient overflow in training","Middle tokens absorb all probability mass in very long contexts","Initial tokens get disproportionately high attention scores always","Attention heads become permanently dormant after long inference runs","Key vectors collapse to zero causing vanishing attention weight scores"],a:2},
+  {q:"What does the Chinchilla scaling law prescribe for compute-optimal runs?",opts:["Use exactly 100 training tokens per model parameter for best loss","Double model size every time you double the total compute budget","Prioritise data quality strictly over data quantity at all scales","Maximise model size and use the minimal number of training tokens","Scale model size and token count roughly equally at about 20 tok/param"],a:4},
+  {q:"What is 'grokking' in neural network training research?",opts:["Aggressive early overfitting that needs strong regularisation to fix","Rapid initial loss descent followed by a persistent training plateau","Delayed generalisation: model memorises first then suddenly generalises","Mode collapse where the model outputs only repeated identical tokens","Gradient explosion causing catastrophic weight instability in training"],a:2},
+  {q:"How does speculative decoding improve autoregressive generation throughput?",opts:["Decodes at reduced FP16 precision to halve GPU memory bandwidth","Draft model proposes tokens and the target verifies them in one pass","Skips redundant attention heads based on per-token routing confidence","Caches all prefill activations to skip any future forward pass cost","Runs the large model twice: once for draft and once for refinement"],a:1},
+  {q:"What is Process Reward Modelling (PRM) vs Outcome Reward Modelling (ORM)?",opts:["PRM scores writing style; ORM scores factual accuracy of outputs","PRM is restricted to math tasks; ORM generalises to all task types","ORM requires more compute budget; PRM is the lighter-weight approach","ORM gives only a terminal reward; PRM rewards each intermediate step","PRM uses human labels; ORM relies entirely on automated correctness signals"],a:3},
+  {q:"What is the 'reversal curse' in large language models?",opts:["Models trained on 'A is B' reliably fail to infer 'B is A' later","Instruction-tuned models reverse helpfulness under adversarial prompts","Causal masking prevents models from ever attending to later tokens","Models generate text right-to-left unreliably under standard decoding","Negation flips model confidence scores toward the opposite class output"],a:0},
+  {q:"What is Fully Sharded Data Parallelism (FSDP) vs standard DDP?",opts:["FSDP replicates all model weights; DDP shards only gradient tensors","FSDP shards parameters, gradients, and optimizer states across all GPUs","FSDP targets CPU clusters only; DDP targets multi-GPU server training","DDP applies ZeRO-3 sharding; FSDP applies only ZeRO-1 optimizer shard","DDP shards model layers across GPUs; FSDP replicates them per device"],a:1},
+  {q:"What is 'weight tying' in language model architecture design?",opts:["Applying L2 penalty uniformly to all weight matrices in the model","Freezing all pre-trained encoder weights during the decoder fine-tune","Copying attention weights from one head to all other heads uniformly","Using identical FFN weight matrices across every single transformer layer","Sharing the input embedding matrix with the output projection weights"],a:4},
+  {q:"What is the 'alignment tax' observed after RLHF fine-tuning of LLMs?",opts:["Inference latency increases substantially due to safety filter overhead","Reward model becomes progressively misaligned after too many PPO steps","Context window shrinks because safety system prompt consumes many tokens","Some capabilities such as coding or math may degrade post-alignment","GPU memory rises because the reference SFT model must stay in memory"],a:3},
+  {q:"What is RMSNorm and why do modern LLMs prefer it over LayerNorm?",opts:["Adds a per-channel affine scale that plain LayerNorm cannot represent","Normalises across the batch dimension for more stable mini-batch runs","Uses running mean statistics similar to BatchNorm for online estimates","Applies normalisation after the residual addition not before the attention","Drops LayerNorm mean-centring step reducing compute with equal performance"],a:4},
+  {q:"What does 'pass@k' measure in code generation benchmarks?",opts:["Whether the model generates exactly k lines of code for each problem","Average token count the model uses across all k generation attempts","Number of semantically distinct solutions found among k generated samples","Percentage of k generated functions that successfully compile without error","Probability at least one of k samples passes all unit tests for a problem"],a:4},
+  {q:"What is the 'logit lens' interpretability technique for transformers?",opts:["Projects intermediate residual activations into vocabulary space per layer","Scales output logits by a learned temperature to sharpen predictions","Applies a linear probe classifier to map hidden states to output labels","Masks low-confidence logits before the final softmax is applied to them","Decomposes output logits into per-attention-head individual contributions"],a:0},
+  {q:"What is Hypothetical Document Embedding (HyDE) used for in RAG?",opts:["Generates and embeds a hypothetical answer to use as the query vector","Pre-generates embeddings for all hypothetical future queries in advance","Embeds document title and body text separately for dual-path retrieval","Caches computed embeddings to avoid re-encoding unchanged old documents","Embeds query and document jointly in a single cross-encoder forward pass"],a:0},
+  {q:"What is 'mesa-optimisation' and why does it concern alignment researchers?",opts:["Applies multi-objective optimisation balancing safety and capability goals","Inner optimiser learned during training may pursue misaligned objectives","Uses gradient-free search to optimise the outer-level training procedure","Applies proximal gradient descent specifically within transformer attention","Optimises only the middle (mesa) layers while freezing outer layer weights"],a:1},
+  {q:"How does Direct Preference Optimisation (DPO) differ from PPO-based RLHF?",opts:["DPO always trains a reward model first; PPO skips reward model training","DPO always requires on-policy rollout data; PPO uses only off-policy data","DPO uses a learned value network; PPO derives value from the reward model","DPO optimises policy directly on preference data with no separate reward model","DPO operates at the token level; PPO operates only at the sequence level"],a:3},
+  {q:"What is 'tensor parallelism' in multi-GPU transformer inference?",opts:["Assigns each transformer layer to a dedicated GPU in a pipeline","Partitions weight matrices across GPUs so each computes one layer shard","Fully replicates model weights on every available GPU in the cluster","Each GPU holds all weights but processes a unique partition of the sequence","Splits the input batch across GPUs with zero inter-GPU communication"],a:1},
+  {q:"What is 'benchmark contamination' and why does it invalidate results?",opts:["Hardware faults corrupt gradient computation during evaluation runs","Noisy or contradictory labels in evaluation sets create upward metric bias","Leakage of benchmark test data into pre-training inflates reported scores","Using the same loss metric for both training objective and evaluation task","Evaluating on training-domain tasks that the model was directly optimised for"],a:2},
+  {q:"What is Constitutional AI (CAI) as developed by Anthropic?",opts:["Uses a constitution-like legal framework to constrain all model outputs","Model critiques and revises its outputs via natural-language principles without human labels","Combines RLHF training with knowledge distillation from a teacher model","Uses actual constitutional law documents as alignment fine-tuning data only","Trains a reward model using only constitutional law text as training corpus"],a:1},
+  {q:"What is context-length extrapolation and how does YaRN address it?",opts:["Inserts learned EOS tokens at intervals to cap sequences at training length","Applies frequency-dependent RoPE scaling to interpolate position encodings","Pads inputs to max training length using learned padding position vectors","Trains a secondary summarisation model for all content past context limit","Interpolates positional IDs to compress long inputs into short windows"],a:1},
+  {q:"What is the acceptance criterion in speculative decoding?",opts:["Always accept all draft tokens greedily to maximise generation speed","Accept with probability min(1, p_large / p_draft) and resample on rejection","Accept only if the draft token exactly matches the large model greedy argmax","Accept tokens that appear in the top-k of the large model's output logits","Accept tokens whose perplexity under the large model is below a threshold"],a:1},
+  {q:"What is Self-Play Fine-Tuning (SPIN) for language models?",opts:["Two separate models debate answers and a human judge selects the winner","Compiler provides automated reward signal for model-generated code directly","Policy plays against a frozen reward model as an adversarial opponent network","Uses RL to place multiple competing models on an internal leaderboard system","Model trains against outputs from its own previous checkpoint as negatives"],a:4},
+  {q:"What is gradient checkpointing and what trade-off does it make?",opts:["Logs gradient norms at every N steps for monitoring training health","Saves a full model checkpoint every N training steps for crash recovery","Stores only select activations and recomputes the rest during backprop","Clips gradients to a maximum norm value preventing any exploding updates","Skips gradient updates entirely for all frozen layers to save compute time"],a:2},
+  {q:"What is model merging via TIES-Merging?",opts:["Resolves weight-delta sign conflicts before merging models in parameter space","Aligns two model embedding spaces before averaging their weight tensors","Retrains the merged checkpoint on combined datasets from all source tasks","Distils an ensemble of models into one smaller student model via KD","Concatenates model outputs then trains a learned linear combination layer"],a:0},
+  {q:"What is the KV cache in autoregressive transformer decoding?",opts:["Stores pre-computed key-value projections to skip redundant recomputation","Caches model weight tensors in GPU L2 cache for fast matrix multiply speed","Holds tokeniser vocabulary lookup table for fast byte-pair encoding calls","Saves intermediate layer activations to CPU RAM to offload VRAM pressure","Retains full attention score matrices for later interpretability analysis use"],a:0},
+  {q:"What is RLVR (RL with Verifiable Rewards) as used in DeepSeek-R1?",opts:["Human raters verify and score each individual model response manually","Formal verification tools check each logical proof step in the output","Trains reward model on verified human preference annotation pairs only","Combines RLHF with automated red-teaming to improve overall safety metrics","Uses programmatic signals like test-case pass rate instead of a reward model"],a:4},
+  {q:"What does activation patching identify in mechanistic interpretability?",opts:["Replaces activations with random noise to probe for model robustness","Uses a patch network trained on safety data to fix incorrect outputs directly","Quantises activations during inference to cut memory bandwidth requirements","Causal mediators of a behaviour by replacing component values from reference runs","Removes low-magnitude activations to compress the model's internal representation"],a:3},
+  {q:"What is byte-pair encoding (BPE) in NLP tokenisation?",opts:["Encodes each byte independently keeping vocabulary size fixed at exactly 256","Splits all tokens at whitespace and punctuation then applies Porter stemming","Uses the WordPiece algorithm to split words at learned subword boundaries","Applies a character-level CNN to generate contextual token representations","Iteratively merges most frequent character pairs to build a subword vocabulary"],a:4},
+  {q:"What is continuous batching in LLM serving infrastructure?",opts:["Pads all queued requests to the same length and processes one fixed batch","Groups requests by predicted output length to minimise decoding padding waste","Splits long single requests into chunks then processes each chunk separately","Dynamically adds new and removes completed requests from a live batch each step","Precomputes prefill for all queued requests before starting any decoding run"],a:3},
+  {q:"What is superposition as a neural network feature phenomenon?",opts:["Multiple independent models running in parallel are softly ensembled together","A neuron fires for only one very specific and narrow semantic input concept","Activations are first compressed then expanded through a bottleneck representation","Sparse mixture-of-experts routes each token to a dedicated specialist sub-network","Network encodes more features than embedding dimensions by overlapping representations"],a:4},
+  {q:"What is perplexity-based data filtering in LLM pre-training data curation?",opts:["Scores documents with a reference model and retains the medium perplexity range","Removes texts where all tokens are in the model's top-1 prediction distribution","Filters by large-model perplexity to keep only the easily predictable documents","Ranks documents by loss then upsamples the hardest examples more frequently","Uses perplexity scores to identify and remove all non-English text from corpus"],a:0},
+  {q:"What is instruction tuning and what capability does it unlock?",opts:["Supervised tuning on (instruction, response) pairs across many diverse tasks","Fine-tuning restricted to a single domain task to maximise in-domain accuracy","Pre-training continuation on high-quality instruction-formatted web text data","Reinforcement learning from human feedback on instruction-following quality scores","Adding a special instruction prefix token to every single training sequence used"],a:0},
+  {q:"What is needle-in-a-haystack evaluation for long-context LLMs?",opts:["Tests model accuracy on extremely short prompts under strict latency budgets","Measures retrieval recall across many documents in a multi-document RAG setup","Evaluates model ability to ignore irrelevant distractor tokens inside long contexts","Embeds a fact at various positions in long filler text and tests its retrieval","Checks whether model can rank the most relevant document in a large corpus"],a:3},
+  {q:"What is the modality gap in multimodal embedding models?",opts:["Vision tokens are much longer than text tokens after going through encoding","Image encoder runs significantly slower than text encoder causing latency gap","Embeddings from different modalities cluster in separate regions of the space","Different model sizes are used for each modality creating an output quality gap","Text and image encoders use completely incompatible positional encoding schemes"],a:2},
+  {q:"What is ReAct prompting for LLM-based agents?",opts:["Reinforcement Action Critic Tuning method for improving agent policy learning","Recursive Attention Chain Tuning approach for multi-step planning and reasoning","Retrieve and Cross-Attend mechanism for grounding agents in retrieved documents","Reward-guided Action Chain Training used for coordinating multi-agent systems","Interleaves Reasoning traces and Action calls so the model thinks then acts iteratively"],a:4},
+  {q:"What is polysemanticity in neural network interpretation research?",opts:["One neuron responding to multiple semantically unrelated input concepts or tokens","A model representing multiple languages in one shared embedding vector space","Multiple separate models trained on same data produce differing output predictions","A transformer layer simultaneously processing all token positions in the sequence","Attention heads attending to multiple different syntactic dependency roles at once"],a:0},
+  {q:"What is inference-time compute scaling as demonstrated in o1-style models?",opts:["Adding more GPU devices in parallel to reduce per-token latency at inference","Quantising weights to INT4 to fit larger batch sizes on each available GPU device","Distilling reasoning chains into weights to avoid inference-time chain-of-thought","Caching common prefix KV representations to amortise compute across many queries","Allocating more tokens to internal chain-of-thought reasoning to improve accuracy"],a:4},
+  {q:"What does temperature scaling calibration do and what does it fix?",opts:["Anneals the learning rate during RLHF to prevent reward model reward hacking","Divides all logits by a learned scalar T to align model confidence with accuracy","Scales per-head attention temperature to control information routing per head","Trains an auxiliary model to re-calibrate base model output distributions post-hoc","Adjusts softmax temperature during training to improve overall gradient flow"],a:1},
+  {q:"Why are master weights kept in FP32 in mixed-precision LLM training?",opts:["FP32 compute runs faster than FP16 on modern GPU tensor core hardware","Stores model weights in FP16 with gradients in FP32 for stable convergence","Applies INT8 quantisation during forward pass only for improved efficiency","Uses FP16 compute with FP32 masters because FP16 underflows on small updates","Mixes supervised and self-supervised loss terms during the same training run"],a:3},
+  {q:"What is GPTQ in the context of post-training model quantisation?",opts:["A prompt engineering technique compressing chain-of-thought into shorter traces","Quantises only the LoRA adapter matrices to 4-bit precision after training","A KV cache compression scheme using product quantisation per attention head","Uses layer-wise Hessian-based error compensation to quantise weights to 3-4 bits","A knowledge distillation approach transferring knowledge to a quantised student"],a:3},
+  {q:"What is the 'bitter lesson' from Richard Sutton's 2019 essay?",opts:["Reinforcement learning will always outperform supervised learning at full scale","Compute scaling consistently beats architectural innovation only in the short run","General methods leveraging computation consistently beat human-engineered approaches","Human-crafted domain knowledge creates brittle models that never truly generalise","Deep learning requires exponentially more data as task complexity keeps increasing"],a:2},
+  {q:"What is negative transfer in multi-task learning and why does it occur?",opts:["Jointly training on dissimilar tasks degrades single-task performance vs solo training","A model trained on negative-sentiment data fails to generalise to neutral examples","Transfer learning from source domain hurts the final performance on target domain","Gradients from auxiliary tasks cancel out all gradients from the primary objective","Negative contrastive examples in training degrade the quality of representations learned"],a:0},
+  {q:"What does prefix caching (prompt caching) save in LLM serving systems?",opts:["Returns cached output tokens for identical repeated queries to skip generation","Stores tokenised prompts to skip re-tokenisation on repeated incoming requests","Avoids recomputing KV representations of shared prompt prefixes across requests","Pre-computes embeddings for all fixed vocabulary prefix tokens once at startup","Caches retrieved document chunks across requests to skip redundant vector lookups"],a:2},
+  {q:"What is RoPE (Rotary Position Embedding) and its main advantage?",opts:["A learned absolute position lookup table that is further fine-tuned from pre-training","Additive sinusoidal encoding applied to the residual stream directly after attention","Relative position bias values added to raw attention logits before softmax is applied","Random orthogonal projection applied to embeddings for input permutation invariance","Rotates Q/K in 2D complex subspaces so relative position is encoded in dot products"],a:4},
+  {q:"What is knowledge distillation in the context of LLM model compression?",opts:["Trains a smaller student model to match the logit distribution of a larger teacher","Extracts top-k reasoning paths from the large model via low-temperature sampling","Uses the model as a quality scoring oracle to filter its own pre-training data","Removes redundant attention heads via magnitude-based structured head pruning","Compresses the KV cache using product quantisation per each individual head"],a:0},
+  {q:"What is activation steering as used in representation engineering research?",opts:["Scales individual activation magnitudes to control output generation diversity","Routes all activations through a safety-trained steering network before decode","Clamps activation values above a set threshold to prevent runaway generation","Adds learned direction vectors to residual stream at inference to steer behaviour","Applies test-time dropout to activations to sample diverse model output behaviours"],a:3},
+  {q:"What is the 'scaling wall' concern in current LLM development trends?",opts:["Physical GPU memory limits prevent training any model beyond 1 trillion params","Regulatory energy consumption caps constrain data centre scale training runs","High-quality pre-training text on the internet may be approaching near exhaustion","Inference cost scales super-linearly with model size making deployment too costly","Transformer attention cannot be efficiently parallelised past a fixed sequence length"],a:2},
+  {q:"What is a 'world model' in model-based reinforcement learning?",opts:["A knowledge graph representing all factual world relationships for agent grounding","A Wikipedia-trained model used to provide factual context to the policy network","A learned generative model of environment dynamics used for planning trajectories","A model trained on news and Wikipedia articles specifically for factual recall tasks","A separate retrieval system that supplies real-world context to the RL policy agent"],a:2},
+  {q:"What makes dense retrieval (DPR) different from keyword-based BM25 search?",opts:["DPR retrieves the densest paragraphs by raw token count for longer context","DPR uses a fine-tuned cross-encoder to score all document-query pairs together","DPR uses learned bi-encoder embeddings to retrieve results by semantic similarity","DPR requires all query keywords to appear in the retrieved document in sequence","DPR returns results ranked by exact phrase match frequency in document text"],a:2},
+  {q:"What is catastrophic forgetting in neural network training?",opts:["New task training overwrites weights causing performance loss on prior learned tasks","Batch normalisation statistics fail to transfer correctly to new task distributions","Dropout during fine-tuning randomly erases learned knowledge from pre-training","Model weights diverge causing loss to explode during fine-tuning stage runs","Gradient clipping during fine-tuning prevents the model adapting to new task data"],a:0},
+  {q:"What is chain-of-thought self-consistency (Wang et al., 2022)?",opts:["Uses a separate verifier model to check logical consistency of each reasoning chain","Verifies each CoT reasoning step against an external knowledge base before use","Trains the model on self-generated data to maintain consistent reasoning outputs","Ranks all generated CoT chains by perplexity and selects the lowest scoring one","Samples multiple CoT paths then majority-votes the final answer for higher accuracy"],a:4},
+  {q:"What efficiency does Mixture-of-Experts (MoE) routing provide?",opts:["Routes different model layers to separate GPUs for efficient pipeline parallelism","Each token attends only to a local window reducing attention complexity to O(n)","A linear combination layer blends all expert outputs via learned scalar weights","Router activates a sparse subset of FFN experts per token keeping compute low","All expert networks process each token and only the top-k outputs are averaged"],a:3},
+  {q:"What is ORPO (Odds Ratio Preference Optimisation)?",opts:["Adds odds-ratio-based preference penalty to SFT loss removing a separate alignment step","Replaces the KL penalty in RLHF with an odds-ratio divergence measure for stability","An online RLHF variant using PPO with odds-ratio reward clipping for safety control","Trains a dedicated odds-ratio reward model before the final policy update training stage","Uses odds-ratio weights to re-weight human preference pairs in reward model training"],a:0},
+  {q:"What is spectral norm regularisation and why is it applied to GAN discriminators?",opts:["Normalises each weight matrix to unit Frobenius norm for overall training stability","Applies L1 regularisation to each singular value of all weight matrices uniformly","Constrains the largest singular value of weight matrices to bound the Lipschitz constant","Uses batch normalisation of singular values to stabilise all discriminator layer outputs","Decomposes weight matrices by SVD and removes all redundant singular value components"],a:2},
+  {q:"What is 'probing' as an analysis technique for language model representations?",opts:["Trains lightweight classifiers on frozen model states to test what information is encoded","Adversarially perturbs inputs to test model robustness to any distribution shift","Samples from the model at high temperature to broadly probe its stored knowledge","Uses gradient saliency maps to show which input tokens most influence each output","Applies attention rollout to trace how information flows between all token positions"],a:0},
+  {q:"What is data augmentation in the context of NLP model training?",opts:["Crawling extra web data to supplement the base pre-training text corpus size","Upsampling rare training classes by duplicating their examples in each batch","Generates paraphrases, back-translations, or noise perturbations of training examples","Filtering low-quality documents using a perplexity oracle on the training corpus","Synthetically generating hard negatives specifically for contrastive retrieval training"],a:2},
+  {q:"What is model collapse in iterative synthetic data training?",opts:["Loss diverges and model weights all become NaN or positive infinity values","Gradient vanishing stops early layers from learning meaningful feature patterns","Model outputs only padding or EOS tokens after too many self-distillation rounds","Progressive narrowing of output distribution causes quality degradation over iterations","Mode collapse where the decoder always outputs only the single most probable token"],a:3},
+  {q:"What is stochastic weight averaging (SWA) and its primary benefit?",opts:["Randomly reinitialises a fraction of all weights each epoch to escape local minima","Averages weight checkpoints along training trajectory landing in a flatter loss basin","Samples random subsets of weight matrices during each forward pass for diversity","Uses random learning rate schedules to explore the loss landscape more thoroughly","Applies structured dropout to the optimizer state during training for regularisation"],a:1},
+  {q:"What distinguishes online vs offline preference optimisation methods?",opts:["Online uses web-crawled data; offline uses crowdsourced human-annotated labels","Online processes one preference pair at a time; offline uses large mini-batches only","Online samples from current policy during training; offline uses a fixed dataset","Offline uses real human feedback; online generates fully synthetic preference pairs","Online applies real-time human feedback; offline uses only delayed batch annotations"],a:2},
+  {q:"What is prefix tuning as a parameter-efficient fine-tuning (PEFT) method?",opts:["Adds task-specific tokens to the beginning of the raw input text sequence only","Freezes all model weights and trains only a linear classification head on top","Appends trainable continuous prefix vectors to each transformer layer's attention","Applies LoRA adapter matrices only to the first N transformer layers as a prefix","Inserts special trainable tokens into the raw input before all fine-tuning begins"],a:2},
+  {q:"What is reward hacking and why does it emerge in RLHF training?",opts:["Policy exploits reward model weaknesses to score highly without genuine improvement","Human labellers game annotation interfaces by clicking options at random speed","The reward model saturates causing gradient vanishing throughout the policy network","Bugs in the PPO implementation cause the policy to receive incorrect reward signals","Excessively high policy gradient variance makes reward estimates highly unreliable"],a:0},
+  {q:"What is a dual encoder architecture in dense passage retrieval?",opts:["Uses two decoder networks to generate both query and document representations","Applies bidirectional cross-attention between query and document for scoring","Runs the same encoder sequentially: once for query then once per candidate doc","Chains a sparse BM25 scorer with a dense encoder in a two-stage retrieval pipeline","Trains separate query and document encoders with contrastive in-batch negatives"],a:4},
+  {q:"What is mean pooling vs CLS pooling for transformer sentence embeddings?",opts:["Mean pools all token reps; CLS takes only the first token position output","Mean averages all non-padding token representations; CLS uses last-layer [CLS] token","CLS uses the last hidden state of all tokens; mean uses the very first token only","Mean uses max-over-time pooling; CLS uses the first position representation alone","CLS pools tokens via learned attention weights; mean takes the median token rep"],a:1},
+  {q:"What is the 'outer alignment' problem in AI safety research?",opts:["Ensuring model API interfaces match the precise intent of downstream users","Making the model tokeniser output align with the structure of training data","Making the model robust to out-of-distribution inputs encountered at deployment","Aligning the model's internal token distribution to the training data statistics","Ensuring the training objective specified actually captures the true desired outcome"],a:4},
+  {q:"What is sparse attention and how does it reduce self-attention complexity?",opts:["Sets small post-softmax attention weights to zero for interpretability analysis","Limits attention to local windows or global tokens avoiding all-pairs computation","Applies attention only to the top-k keys selected by a learned routing mechanism","Computes attention over a random sample of key-value pairs per each query token","Uses binary sparse masks to nullify all computationally redundant attention operations"],a:1},
+  {q:"What is knowledge distillation in deep learning model compression?",opts:["Filtering pre-training corpus to remove all low-information redundant documents","Pruning redundant attention heads based on their gradient attribution scores only","Quantising teacher model weights to initialise the student model training weights","Trains small model to match large model's intermediate representations or output logits","Merging multiple fine-tuned checkpoints to combine their diverse learned capabilities"],a:3},
+  {q:"What is 'deliberative alignment' described in o1-style model system cards?",opts:["A post-processing output filter checking responses against a static safety list","Training model to reason explicitly about safety policies in its CoT before responding","Training a dedicated deliberation module to override base policy outputs when needed","Running a verifier model to score every individual output for policy compliance rate","Applying RLHF with careful human annotation of all safety-critical edge cases only"],a:1},
+  {q:"What is loss of plasticity in neural networks and what causes it?",opts:["Gradient explosion causes weights to become too large for any effective learning","Overfitting to training set prevents generalisation to the held-out validation set","Model forgets all prior tasks when sequentially trained on new tasks one at a time","Accumulation of dead units and rank collapse progressively reduce learning capacity","Overly aggressive dropout removes too many neurons causing severe underfitting issues"],a:3},
+  {q:"What is test-time training (TTT) and what makes it distinct from fine-tuning?",opts:["Training on the test set post-evaluation to measure the model's upper-bound accuracy","Adapting model weights at inference using self-supervised objectives on test inputs","Evaluating the model after every gradient update to actively track overfitting rate","Running additional training steps automatically whenever deployment accuracy drops off","Using test-set labels to augment the training data distribution before deployment"],a:1},
+  {q:"What is token healing and what tokenisation artefact does it fix?",opts:["Corrects hallucinated tokens using a deterministic rule-based post-processing filter","Removes duplicate repeated tokens produced by greedy decoding at low temperature","Replaces low-probability tokens with higher-probability alternatives during sampling","Re-tokenises the end of the prompt to fix tokenisation boundary split artefacts","Applies beam search corrections retroactively to fix errors made in earlier positions"],a:3},
+  {q:"What is the main insight behind chain-of-thought prompting for complex reasoning?",opts:["Longer prompts consistently improve accuracy by giving the model more total context","Adding examples of the correct answer format helps the model structure its output","Asking the model to produce the final answer first then justify it improves accuracy","Making the model restate the question improves reading comprehension performance","Inducing intermediate reasoning steps before the final answer improves accuracy on hard tasks"],a:4},
+  {q:"What is flash decoding in long-context LLM inference optimisation?",opts:["Uses FP8 precision throughout to double raw throughput during the decode phase","Skips transformer layers below a confidence threshold to accelerate token generation","Parallelises KV cache attention computation across the sequence length dimension","Compresses the KV cache via binary hashing to cut memory read bandwidth needed","Caches the first N tokens of context and only re-attends to newly generated tokens"],a:2},
+  {q:"What is contrastive decoding and how does it improve generation quality?",opts:["Samples from two temperatures then selects the token with higher probability score","Penalises all tokens that appear in both the input prompt and the generated output","Subtracts logits of a weaker amateur model from a stronger expert model's logits","Applies nucleus sampling only to contrastive token pairs to encourage more diversity","Ranks candidate continuations by cosine similarity to the input query embedding"],a:2},
+  {q:"What is emergent misalignment as observed in targeted fine-tuning research?",opts:["Fine-tuning on narrow data causes unexpected unsafe behaviours out of distribution","Safety-tuned models show emergent honesty improvements beyond what training targeted","Fine-tuning one capability causes unexpected safety improvements across other tasks","Scaling model size causes alignment to emerge naturally without any explicit training","Instruction tuning misaligns models from the original pre-training distribution goal"],a:0},
+  {q:"What is the residual stream in mechanistic interpretability of transformers?",opts:["A separate dedicated memory module for storing long-range token dependency info","Shared information highway that all model components read from and write to additively","The skip-connection pathways allowing gradients to flow cleanly through deep networks","A register that stores positional encoding information persistently across all layers","A linear projection layer mapping token representations to the vocabulary space"],a:1},
+  {q:"What is RLHF and what are its three canonical training stages?",opts:["Recursive Learning from Human Features: embed then rank then generate stages","Random Label Heuristic Framework: collect then score then distil three main stages","Robust Hardening and Fine-tuning: pretrain then prune then deploy three stages","RL from Human Feedback: supervised fine-tune then train reward model then RL policy","Recurrent Learning for Helpful Functions: encode then attend then decode three stages"],a:3},
+  {q:"What is chunking strategy in RAG and how does chunk size affect retrieval quality?",opts:["Controls how many documents are retrieved per query for the total context window","Splits documents into segments; small chunks improve precision; large preserve context","Sets the maximum number of raw tokens returned in each individual retrieved passage","Parallelises embedding generation by processing full documents in fixed GPU chunks","Determines maximum embedding dimensions used per document chunk for storage cost"],a:1},
+  {q:"What is step-level MCTS applied to LLM reasoning processes?",opts:["Searches over prompt templates to find the best few-shot demonstration examples","Uses MCTS over vocabulary to select the single highest-probability next token only","Uses MCTS over reasoning steps with a PRM to guide search toward correct answers","Applies MCTS to find optimal training hyperparameters for fine-tuning LLM models","Applies tree search over retrieval results to locate the most relevant single passage"],a:2},
+  {q:"What does sparse autoencoder (SAE) analysis reveal about neural network internals?",opts:["Removes sparse redundant weights from over-parameterised transformer model layers","Decomposes activations into sparse interpretable features revealing superposition structure","Analyses sparse attention patterns to determine token-to-token relationship importance","Quantises sparse weight matrices to reduce the full memory footprint of large models","Trains a sparse encoder to predict which specific attention heads activate per token"],a:1},
+  {q:"What is weight decay and how does it affect LLM training and generalisation?",opts:["Exponentially decays the learning rate schedule to prevent late-stage training divergence","Drops all weights below a magnitude threshold to progressively create sparse weights","Scales gradient updates by their rolling historical magnitude to normalise step sizes","Gradually reduces the influence of all older training examples as training progresses","L2 regularisation penalising large weight magnitudes improving generalisation and stability"],a:4},
+  {q:"What is in-context learning (ICL) and what makes it surprising about LLMs?",opts:["Each new context window resets the model state enabling fresh task-specific adaptation","Models learn from supervised gradient updates computed entirely within each context","Attention heads dynamically specialise during ICL to memorise the demonstration labels","Model adapts to new tasks via demonstration examples without any weight updates at all","Context length determines learning extent; longer contexts always yield better ICL results"],a:3},
+  {q:"What is gradient clipping and why is it critical for training large language models?",opts:["Removes gradients entirely for frozen layers to speed up the backward pass step","Caps gradient norm to a threshold preventing exploding update steps during training","Samples only the top-k gradient components per layer for computational efficiency","Skips gradient updates for all frozen parameter layers to conserve total compute","Scales all gradients by their moving average to normalise the per-step update size"],a:1},
+  {q:"What is pipeline parallelism in distributed LLM training and what is its drawback?",opts:["Splits the data loading pipeline across workers but stalls on slow node reads","Trains encoder and decoder components on separate GPU nodes via message bus","Replicates the full model on all GPUs and pipelines the gradient synchronisation","Splits model layers sequentially across devices; suffers from pipeline bubble idle time","Alternates forward and backward passes across all devices to fully utilise GPUs"],a:3},
+  {q:"What is a routing collapse failure mode in Mixture-of-Experts models?",opts:["Router collapses to uniform distribution routing each token identically to all experts","All tokens are routed to the same few experts leaving most expert capacity unused","Expert networks converge to identical representations making all routing redundant","Load-balancing loss overwhelms task loss causing experts to over-specialise by domain","Routing probabilities become binary causing completely discontinuous gradient flow"],a:1},
+  {q:"What is RoPE extrapolation failure and how is it typically mitigated?",opts:["RoPE angles overflow causing NaN values that are fixed via gradient norm clipping","RoPE frequency bands alias producing repeated position encodings at max train length","Positions past training length produce OOD rotation angles; mitigated via frequency scaling","RoPE only supports fixed-length sequences requiring a full retrain for any extension","The rotation matrix becomes ill-conditioned beyond training length needing SVD repair"],a:2},
+  {q:"What is task arithmetic in the context of model weight manipulation?",opts:["Applies learned scalar multipliers to task-specific neuron activations at inference","Arithmetically combines fine-tuned weight deltas (task vectors) to add or remove skills","Averages task-specific adapter weights to create one unified multi-task merged model","Computes gradient dot products between tasks to measure their training-time interference","Computing task-specific loss weights for each domain to guide training data sampling"],a:1},
+  {q:"What is label smoothing and what is its primary effect on model training?",opts:["Adds Gaussian noise to training labels to make decision boundaries less sharp overall","Randomly swaps labels between similar classes to improve inter-class generalisation","Applies training temperature scaling to labels to match the inference temperature set","Replaces hard one-hot targets with soft distributions preventing overconfident predictions","Smooths the loss curve by averaging training labels across a sliding temporal window"],a:3},
+  {q:"What is the inverse scaling phenomenon observed in some LLM benchmark evaluations?",opts:["Training efficiency measured in tokens per parameter decreases at all larger model sizes","Inference cost scales inversely with model size due to the KV cache sharing benefits","Alignment quality consistently decreases as model scale increases across capability areas","Smaller models achieve higher accuracy due to reduced memorisation of training data","Performance on certain tasks degrades as model scale increases, counter to typical trends"],a:4},
+  {q:"What is positional interpolation (PI) for extending LLM context length at inference?",opts:["Inserts learned position tokens at regular intervals to extend effective context range","Trains additional position embeddings for unseen positions via a fine-tuning continuation","Compresses the original long context into the training window via learned token pooling","Applies attention distance bias that decays with separation to handle far positions","Down-scales all position indices so longer sequences map into the trained position range"],a:4},
+  {q:"What is BPE dropout and what training benefit does it provide for NLP models?",opts:["Randomly drops specific byte-pair merge rules at training time improving token robustness","Applies standard neuron dropout only to the token embedding layer output during training","Masks a random subset of raw input tokens before byte-pair encoding step is applied","Skips the full BPE encoding step entirely for a random fraction of training examples","Randomly replaces rare tokens with the unknown token to simulate OOV at inference time"],a:0},
+  {q:"What is 'activation checkpointing' and when is it preferred over full materialisation?",opts:["Saves model weights every N steps to allow recovery from hardware failure","Recomputes forward-pass activations during backprop trading compute for peak memory","Caches activations in CPU RAM to offload GPU VRAM during the forward pass","Stores only the final layer activation discarding all intermediate layer outputs","Compresses activations using quantisation before storing to save VRAM space"],a:1}
+];
+
+function shuffle(a){return[...a].sort(function(){return Math.random()-0.5})}
+function pick10(){return shuffle(ALL_QUESTIONS).slice(0,10)}
+
+var gameQs=[],cQ=0,score=0,selIdx=null;
+var player={name:"",id:""};
+var lb=[];
+var FLOW_URL="https://script.google.com/macros/s/AKfycbyjhQ5TPJIMA-iE6JRK-u1NYbtlQFY3psCslSlHuVKvIaFRL2Y4rZNtCjiJqEQdveqOCg/exec";
+
+try{var s=localStorage.getItem("aiq_hard_lb");if(s)lb=JSON.parse(s);}catch(e){}
+try{FLOW_URL=localStorage.getItem("aiq_sheet_url")||"";}catch(e){}
+
+function go(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active")});document.getElementById(id).classList.add("active")}
+
+function saveFlowUrl(){
+  var u=document.getElementById("flowUrl").value.trim();
+  if(!u){alert("Please enter the Power Automate URL");return}
+  FLOW_URL=u;
+  try{localStorage.setItem("aiq_sheet_url",u)}catch(e){}
+  alert("Saved! Scores will now post to Excel Online.");
+  go("s-entry");
+}
+
+function startQuiz(){
+  var n=document.getElementById("pName").value.trim();
+  var i=document.getElementById("pId").value.trim();
+  if(!n||!i){alert("Please enter your name and Enterprise ID");return}
+  player={name:n,id:i};
+  gameQs=pick10();cQ=0;score=0;selIdx=null;
+  buildDots();showQ();go("s-quiz");
+}
+
+function buildDots(){
+  document.getElementById("stepDots").innerHTML=gameQs.map(function(_,i){return'<div class="dot" id="d'+i+'"></div>'}).join("");
+  updDots();
+}
+function updDots(){
+  gameQs.forEach(function(_,i){
+    var d=document.getElementById("d"+i);
+    d.className="dot"+(i<cQ?" done":i===cQ?" cur":"");
+  });
+}
+
+function showQ(){
+  selIdx=null;
+  var q=gameQs[cQ];
+  document.getElementById("qNum").textContent="Question "+(cQ+1)+" of "+gameQs.length;
+  document.getElementById("qTxt").textContent=q.q;
+  document.getElementById("pFill").style.width=(cQ/gameQs.length*100)+"%";
+  document.getElementById("nextBtn").style.display="none";
+  var L=["A","B","C","D","E"];
+  document.getElementById("opts").innerHTML=q.opts.map(function(o,i){
+    return'<div class="opt" onclick="pick('+i+')" id="o'+i+'"><span class="olabel" id="ol'+i+'">'+L[i]+'</span>'+o+'</div>';
+  }).join("");
+  updDots();
+}
+
+function pick(idx){
+  if(selIdx!==null)document.getElementById("o"+selIdx).classList.remove("selected");
+  selIdx=idx;
+  document.getElementById("o"+idx).classList.add("selected");
+  document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQ(){
+  if(selIdx===null)return;
+  if(selIdx===gameQs[cQ].a)score++;
+  cQ++;
+  if(cQ<gameQs.length)showQ();
+  else showResult();
+}
+
+function getGrade(s){
+  if(s===10)return{e:"🏆",t:"Perfect Score!",m:"Extraordinary — a true AI expert!"};
+  if(s>=8)return{e:"🌟",t:"AI Expert!",m:"Outstanding! These were genuinely hard questions."};
+  if(s>=6)return{e:"🎯",t:"Strong Contender!",m:"Great result on hard technical questions. Keep pushing!"};
+  if(s>=4)return{e:"📚",t:"Keep Learning!",m:"These are PhD-level questions. Solid attempt!"};
+  return{e:"🤖",t:"Challenger!",m:"These questions are genuinely tough. Try again!"};
+}
+
+function showResult(){
+  document.getElementById("arc").style.strokeDashoffset=364.4-((score/10)*364.4);
+  document.getElementById("sBig").textContent=score+"/10";
+  var g=getGrade(score);
+  document.getElementById("gEmoji").textContent=g.e;
+  document.getElementById("gTitle").textContent=g.t;
+  document.getElementById("gMsg").textContent=g.m;
+  var now=new Date();
+  var entry={name:player.name,id:player.id,score:score,ts:now.getTime()};
+  lb.push(entry);
+  lb.sort(function(a,b){return b.score-a.score||a.ts-b.ts});
+  if(lb.length>50)lb=lb.slice(0,50);
+  try{localStorage.setItem("aiq_hard_lb",JSON.stringify(lb))}catch(e){}
+  renderLB();
+  go("s-result");
+  postToExcel(entry,now);
+}
+
+function renderLB(){
+  var medals=["🥇","🥈","🥉"];
+  document.getElementById("lb").innerHTML=lb.slice(0,10).map(function(p,i){
+    var me=p.name===player.name&&p.id===player.id&&p.score===score;
+    return'<div class="lb-row'+(me?" hi":"")+'"><div class="lb-rank">'+(i<3?medals[i]:"#"+(i+1))+'</div><div class="lb-info"><div class="lb-name">'+p.name+(me?" \u2190 you":"")+'</div><div class="lb-id">'+p.id+'</div></div><div class="lb-sc">'+p.score+'/10</div></div>';
+  }).join("");
+}
+
+function postToExcel(entry,now){
+  var sb=document.getElementById("sheetStatus");
+  if(!FLOW_URL){
+    sb.className="status-bar err";
+    sb.textContent="\u26a0 Power Automate not configured. Tap \u2699\ufe0f on home screen.";
+    return;
+  }
+  sb.className="status-bar sending";
+  sb.innerHTML='<span class="dot-pulse"></span>Saving score to Excel via Power Automate\u2026';
+  var params=new URLSearchParams({
+    name:entry.name,
+    enterpriseId:entry.id,
+    score:entry.score+"/10",
+    percent:(entry.score*10)+"%",
+    date:now.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),
+    time:now.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})
+  });
+  fetch(FLOW_URL+"?"+params.toString(),{method:"GET",mode:"no-cors"})
+    .then(function(){
+      sb.className="status-bar ok";
+      sb.textContent="\u2705 Score saved to Excel Online!";
+    })
+    .catch(function(){
+      sb.className="status-bar err";
+      sb.textContent="\u274c Could not reach Power Automate. Check your Flow URL in \u2699\ufe0f.";
+    });
+}
+
+function restart(){
+  document.getElementById("pName").value="";
+  document.getElementById("pId").value="";
+  document.getElementById("sheetStatus").className="status-bar";
+  go("s-entry");
+}
+
+window.addEventListener("load",function(){
+  document.getElementById("flowUrl").value=FLOW_URL;
+});
+</script>
+</body>
+</html>
