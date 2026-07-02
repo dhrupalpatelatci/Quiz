@@ -262,7 +262,6 @@ var lb=[];
 var FLOW_URL="https://script.google.com/macros/s/AKfycbyjhQ5TPJIMA-iE6JRK-u1NYbtlQFY3psCslSlHuVKvIaFRL2Y4rZNtCjiJqEQdveqOCg/exec";
 
 try{var s=localStorage.getItem("aiq_hard_lb");if(s)lb=JSON.parse(s);}catch(e){}
-try{FLOW_URL=localStorage.getItem("aiq_sheet_url")||"";}catch(e){}
 
 function go(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active")});document.getElementById(id).classList.add("active")}
 
